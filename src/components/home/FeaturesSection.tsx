@@ -64,7 +64,7 @@ const FeaturesSection: React.FC = () => {
             What to Expect
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            Prarambha 1.0 offers a variety of activities and opportunities.
+            Prarambha offers a variety of activities and opportunities.
           </p>
         </motion.div>
         
