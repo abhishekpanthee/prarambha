@@ -22,7 +22,7 @@ const HeroSection: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
-    }, 3000); // Change image every 4 seconds
+    }, 2000); // Change image every 4 seconds
 
     return () => clearInterval(interval);
   }, []);
