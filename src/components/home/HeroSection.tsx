@@ -60,7 +60,7 @@ const HeroSection: React.FC = () => {
               transition={{ delay: 0.2, duration: 0.5 }}
               className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 dark:text-white leading-tight mb-6"
             >
-              <span className="block">Your Frist Step</span>
+              <span className="block">Your First Step</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500 dark:from-indigo-400 dark:to-sky-300">
               Prarambha 
               </span>
