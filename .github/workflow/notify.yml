@@ -1,0 +1,92 @@
+name: Notify Discord
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    types: [opened, reopened, closed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK: https://discord.com/api/webhooks/1369196507676409927/R_KJ3wdWv13PtmdNVQSWOUoUg45ZkxRB7h0lJVnqYEP9vy8JjjHG0mlFZd6y0V4dK6sL
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          EVENT_NAME="${{ github.event_name }}"
+          ACTOR="${{ github.actor }}"
+          AVATAR_URL="https://github.com/${ACTOR}.png"
+          REPO="${{ github.repository }}"
+          REPO_NAME=$(basename "$REPO")
+          REPO_OWNER="${{ github.repository_owner }}"
+          TIMESTAMP=$(date '+Today at %I:%M %p')
+
+          if [ "$EVENT_NAME" = "push" ]; then
+            COMMIT_ID="${{ github.sha }}"
+            SHORT_COMMIT=$(echo $COMMIT_ID | cut -c1-7)
+            COMMIT_MSG="${{ github.event.head_commit.message }}"
+            COMMIT_URL="${{ github.event.head_commit.url }}"
+            BRANCH="${{ github.ref }}"
+            DATE=$(date -d "${{ github.event.head_commit.timestamp }}" "+%m/%d/%Y, %I:%M:%S %p")
+            FILES=$(echo "${{ toJson(github.event.head_commit.modified) }}" | jq -r '.[]' | tr '\n' ',' | sed 's/,$//')
+
+            curl -H "Content-Type: application/json" -X POST -d "{
+              \"username\": \"$ACTOR\",
+              \"avatar_url\": \"$AVATAR_URL\",
+              \"embeds\": [{
+                \"title\": \"GitHub Event: push\",
+                \"url\": \"$COMMIT_URL\",
+                \"color\": 65280,
+                \"fields\": [
+                  { \"name\": \"Commit Message\", \"value\": \"$COMMIT_MSG\" },
+                  { \"name\": \"Commit ID\", \"value\": \"[$SHORT_COMMIT]($COMMIT_URL)\" },
+                  { \"name\": \"Branch\", \"value\": \"$BRANCH\" },
+                  { \"name\": \"Files Modified\", \"value\": \"$FILES\" },
+                  { \"name\": \"Commit Date\", \"value\": \"$DATE\" },
+                  { \"name\": \"Repository\", \"value\": \"$REPO_NAME\" }
+                ],
+                \"thumbnail\": {
+                  \"url\": \"$AVATAR_URL\"
+                },
+                \"footer\": {
+                  \"text\": \"Repository Owner: $REPO_OWNER • $TIMESTAMP\"
+                }
+              }]
+            }" "$DISCORD_WEBHOOK"
+
+          elif [ "$EVENT_NAME" = "pull_request" ]; then
+            PR_TITLE="${{ github.event.pull_request.title }}"
+            PR_URL="${{ github.event.pull_request.html_url }}"
+            PR_STATE="${{ github.event.pull_request.state }}"
+            PR_MERGED="${{ github.event.pull_request.merged }}"
+            PR_ACTION="${{ github.event.action }}"
+            COLOR=3447003
+
+            if [ "$PR_ACTION" = "closed" ] && [ "$PR_MERGED" = "true" ]; then
+              PR_STATE="merged"
+              COLOR=3066993
+            elif [ "$PR_ACTION" = "closed" ]; then
+              PR_STATE="closed"
+              COLOR=15158332
+            fi
+
+            curl -H "Content-Type: application/json" -X POST -d "{
+              \"username\": \"$ACTOR\",
+              \"avatar_url\": \"$AVATAR_URL\",
+              \"embeds\": [{
+                \"title\": \"Pull Request: $PR_STATE\",
+                \"description\": \"**$ACTOR** ${PR_STATE} a pull request: [$PR_TITLE]($PR_URL)\",
+                \"color\": $COLOR,
+                \"thumbnail\": {
+                  \"url\": \"$AVATAR_URL\"
+                },
+                \"footer\": {
+                  \"text\": \"Repository Owner: $REPO_OWNER • $TIMESTAMP\"
+                }
+              }]
+            }" "$DISCORD_WEBHOOK"
+          fi
