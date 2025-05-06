@@ -20,6 +20,7 @@ jobs:
           EVENT_NAME="${{ github.event_name }}"
           ACTOR="${{ github.actor }}"
           AVATAR_URL="https://github.com/${ACTOR}.png"
+          CUSTOM_AVATAR="https://lh6.googleusercontent.com/proxy/GZwNM6v6MoklI9TYJHEHyEOffJquvfAdZy1cbuAy6_NPPzS0Q-RuhWnqv3qjK8LttDx7BUUixfg"  # Replace with your custom bot avatar URL
           REPO="${{ github.repository }}"
           REPO_NAME=$(basename "$REPO")
           REPO_OWNER="${{ github.repository_owner }}"
@@ -35,8 +36,8 @@ jobs:
             FILES=$(echo "${{ toJson(github.event.head_commit.modified) }}" | jq -r '.[]' | tr '\n' ',' | sed 's/,$//')
 
             curl -H "Content-Type: application/json" -X POST -d "{
-              \"username\": \"$ACTOR\",
-              \"avatar_url\": \"$AVATAR_URL\",
+              \"username\": \"repo-bot\",
+              \"avatar_url\": \"$CUSTOM_AVATAR\",
               \"embeds\": [{
                 \"title\": \"GitHub Event: push\",
                 \"url\": \"$COMMIT_URL\",
@@ -75,8 +76,8 @@ jobs:
             fi
 
             curl -H "Content-Type: application/json" -X POST -d "{
-              \"username\": \"$ACTOR\",
-              \"avatar_url\": \"$AVATAR_URL\",
+              \"username\": \"repo-bot\",
+              \"avatar_url\": \"$CUSTOM_AVATAR\",
               \"embeds\": [{
                 \"title\": \"Pull Request: $PR_STATE\",
                 \"description\": \"**$ACTOR** ${PR_STATE} a pull request: [$PR_TITLE]($PR_URL)\",
